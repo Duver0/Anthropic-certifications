@@ -119,6 +119,7 @@ try {
   // ── Navigate to certificate / profile page ────────────────────────────────
 
   const profilePaths = [
+    '/accounts/profile/',
     '/profile',
     '/profiles/me',
     '/certificates',
@@ -169,180 +170,70 @@ try {
 
   console.log('🔍  Extracting certificates…');
 
-  const certificates = await page.evaluate((): Certificate[] => {
-    const certs: Certificate[] = [];
-
+  const merged = await page.evaluate((): Certificate[] => {
     const clean = (value: string | null | undefined): string =>
       (value ?? '').replace(/\s+/g, ' ').trim();
 
-    const extractLabeledValue = (root: Element, label: string): string => {
-      const pattern = new RegExp(`${label}\\s*:?\\s*(.+?)(?=(Course Completed|Completion Date|View Certificate|$))`, 'i');
-
-      const direct = clean(root.textContent);
-      const directMatch = direct.match(pattern);
-      if (directMatch?.[1]) return clean(directMatch[1]);
-
-      const all = Array.from(root.querySelectorAll('*'));
-      for (const el of all) {
-        const text = clean(el.textContent);
-        const match = text.match(pattern);
-        if (match?.[1]) return clean(match[1]);
-
-        if (new RegExp(`^${label}\\s*:?$`, 'i').test(text)) {
-          const sibling = clean(el.nextElementSibling?.textContent);
-          if (sibling) return sibling;
-        }
-      }
-
-      return '';
+    const isDash = (value: string): boolean => {
+      const normalized = clean(value);
+      return normalized === '' || normalized === '--';
     };
 
-    // Common Skilljar selectors for completed courses / certificates.
-    const cardSelectors = [
-      '.course-listing-item',
-      '.course-card',
-      '[data-course-id]',
-      '.certificate-card',
-      '.completed-course',
-      '.training-item',
-      'article.course',
-    ];
+    const parseFromTable = (): Certificate[] => {
+      const table = document.querySelector('#profile-course-table');
+      if (!table) return [];
 
-    let cards: NodeListOf<Element> | Element[] = [];
+      const rows = Array.from(table.querySelectorAll('tbody tr'));
+      const certs: Certificate[] = [];
 
-    for (const sel of cardSelectors) {
-      const found = document.querySelectorAll(sel);
-      if (found.length > 0) {
-        cards = found;
-        break;
-      }
-    }
+      for (const row of rows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 5) continue;
 
-    // If no specific card selector matched, try a broader search for anything
-    // that looks like a completed or certified item.
-    if (cards.length === 0) {
-      cards = Array.from(
-        document.querySelectorAll('[class*="certificate"], [class*="complete"], [class*="course"]')
-      ).filter((el) => el.querySelector('img, a'));
-    }
+        const titleLink = cells[0]?.querySelector('a[href]') as HTMLAnchorElement | null;
+        const title = clean(titleLink?.textContent);
+        if (!title) continue;
 
-    cards.forEach((card) => {
-      // Title
-      const titleEl = card.querySelector(
-        'h2, h3, h4, .course-title, .title, [class*="title"]'
-      );
-      const title =
-        clean(titleEl?.textContent) ||
-        extractLabeledValue(card, 'Course Completed');
-      if (!title) return;
+        const courseUrl = clean(titleLink?.href) || window.location.href;
 
-      // Link
-      const linkEl = card.querySelector('a[href]') as HTMLAnchorElement | null;
-      const courseUrl = linkEl?.href ?? window.location.href;
+        // In this table structure, the status column contains "View certificate"
+        // when a cert exists.
+        const statusCell = cells[2];
+        const statusLinks = Array.from(statusCell?.querySelectorAll('a[href]') ?? []) as HTMLAnchorElement[];
+        const certLink =
+          statusLinks.find((link) =>
+            clean(link.href).includes('verify.skilljar.com') ||
+            clean(link.textContent).toLowerCase().includes('view certificate')
+          ) ?? null;
+        if (!certLink) continue;
 
-      // Badge image
-      const imgEl = card.querySelector('img') as HTMLImageElement | null;
-      const badgeImageUrl = imgEl?.src ?? '';
+        const certUrl = clean(certLink.href) || courseUrl;
+        const badgeImageUrl =
+          clean(statusCell?.querySelector('img')?.getAttribute('src')) ||
+          '';
 
-      // Issue date — look for date strings near the card.
-      const dateEl = card.querySelector(
-        'time, .date, .issued, .completed-date, [class*="date"]'
-      );
-      const issueDate =
-        (dateEl?.getAttribute('datetime') ??
-        clean(dateEl?.textContent)) ||
-        extractLabeledValue(card, 'Completion Date') ||
-        '';
+        // Prefer the "Certificate completed" column (index 4),
+        // fallback to "Completed" (index 3).
+        const certificateCompleted = clean(cells[4]?.querySelector('.nowrap')?.textContent || cells[4]?.textContent);
+        const completed = clean(cells[3]?.querySelector('.nowrap')?.textContent || cells[3]?.textContent);
+        const issueDate = !isDash(certificateCompleted)
+          ? certificateCompleted
+          : (!isDash(completed) ? completed : '');
 
-      // Description
-      const descEl = card.querySelector('p, .description, [class*="desc"]');
-      const description = descEl?.textContent?.trim();
-
-      certs.push({
-        title,
-        issueDate,
-        courseUrl,
-        badgeImageUrl,
-        description: description || undefined,
-      });
-    });
-
-    return certs;
-  });
-
-  // Also scan the page for any explicit "certificate" image links.
-  const certImageLinks = await page.evaluate((): Certificate[] => {
-    const results: Certificate[] = [];
-
-    const clean = (value: string | null | undefined): string =>
-      (value ?? '').replace(/\s+/g, ' ').trim();
-
-    const extractLabeledValue = (root: Element, label: string): string => {
-      const pattern = new RegExp(`${label}\\s*:?\\s*(.+?)(?=(Course Completed|Completion Date|View Certificate|$))`, 'i');
-
-      const direct = clean(root.textContent);
-      const directMatch = direct.match(pattern);
-      if (directMatch?.[1]) return clean(directMatch[1]);
-
-      const all = Array.from(root.querySelectorAll('*'));
-      for (const el of all) {
-        const text = clean(el.textContent);
-        const match = text.match(pattern);
-        if (match?.[1]) return clean(match[1]);
-
-        if (new RegExp(`^${label}\\s*:?$`, 'i').test(text)) {
-          const sibling = clean(el.nextElementSibling?.textContent);
-          if (sibling) return sibling;
-        }
-      }
-
-      return '';
-    };
-
-    const links = Array.from(document.querySelectorAll('a[href]')) as HTMLAnchorElement[];
-    links.forEach((link) => {
-      if (
-        link.href.includes('certificate') ||
-        link.textContent?.toLowerCase().includes('certificate') ||
-        link.textContent?.toLowerCase().includes('view certificate')
-      ) {
-        const container =
-          link.closest('.course-listing-item, .course-card, [data-course-id], article, li, section, div') ??
-          link.parentElement;
-        const linkText = clean(link.textContent);
-        const titleFromCourseCompleted = container
-          ? extractLabeledValue(container, 'Course Completed')
-          : '';
-        const title =
-          titleFromCourseCompleted ||
-          clean(link.getAttribute('aria-label')) ||
-          (linkText.toLowerCase() === 'view certificate' ? '' : linkText);
-        if (!title) return;
-        const imgEl = link.querySelector('img') as HTMLImageElement | null;
-        const issueDate = container
-          ? extractLabeledValue(container, 'Completion Date')
-          : '';
-        results.push({
+        certs.push({
           title,
           issueDate,
-          courseUrl: link.href,
-          badgeImageUrl: imgEl?.src ?? '',
+          courseUrl: certUrl,
+          badgeImageUrl,
+          description: undefined,
         });
       }
-    });
-    return results;
-  });
 
-  // Merge unique entries (prefer cards over raw links to avoid duplicates).
-  const seen = new Set<string>();
-  const merged: Certificate[] = [];
-  for (const c of [...certificates, ...certImageLinks]) {
-    const key = `${c.title}__${c.courseUrl}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      merged.push(c);
-    }
-  }
+      return certs;
+    };
+
+    return parseFromTable();
+  });
 
   console.log(`🏆  Found ${merged.length} certificate(s).`);
 
