@@ -249,8 +249,8 @@ try {
         'time, .date, .issued, .completed-date, [class*="date"]'
       );
       const issueDate =
-        dateEl?.getAttribute('datetime') ??
-        clean(dateEl?.textContent) ||
+        (dateEl?.getAttribute('datetime') ??
+        clean(dateEl?.textContent)) ||
         extractLabeledValue(card, 'Completion Date') ||
         '';
 
