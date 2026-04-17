@@ -172,6 +172,31 @@ try {
   const certificates = await page.evaluate((): Certificate[] => {
     const certs: Certificate[] = [];
 
+    const clean = (value: string | null | undefined): string =>
+      (value ?? '').replace(/\s+/g, ' ').trim();
+
+    const extractLabeledValue = (root: Element, label: string): string => {
+      const pattern = new RegExp(`${label}\\s*:?\\s*(.+?)(?=(Course Completed|Completion Date|View Certificate|$))`, 'i');
+
+      const direct = clean(root.textContent);
+      const directMatch = direct.match(pattern);
+      if (directMatch?.[1]) return clean(directMatch[1]);
+
+      const all = Array.from(root.querySelectorAll('*'));
+      for (const el of all) {
+        const text = clean(el.textContent);
+        const match = text.match(pattern);
+        if (match?.[1]) return clean(match[1]);
+
+        if (new RegExp(`^${label}\\s*:?$`, 'i').test(text)) {
+          const sibling = clean(el.nextElementSibling?.textContent);
+          if (sibling) return sibling;
+        }
+      }
+
+      return '';
+    };
+
     // Common Skilljar selectors for completed courses / certificates.
     const cardSelectors = [
       '.course-listing-item',
@@ -206,7 +231,9 @@ try {
       const titleEl = card.querySelector(
         'h2, h3, h4, .course-title, .title, [class*="title"]'
       );
-      const title = titleEl?.textContent?.trim() ?? '';
+      const title =
+        clean(titleEl?.textContent) ||
+        extractLabeledValue(card, 'Course Completed');
       if (!title) return;
 
       // Link
@@ -223,7 +250,8 @@ try {
       );
       const issueDate =
         dateEl?.getAttribute('datetime') ??
-        dateEl?.textContent?.trim() ??
+        clean(dateEl?.textContent) ||
+        extractLabeledValue(card, 'Completion Date') ||
         '';
 
       // Description
@@ -245,6 +273,32 @@ try {
   // Also scan the page for any explicit "certificate" image links.
   const certImageLinks = await page.evaluate((): Certificate[] => {
     const results: Certificate[] = [];
+
+    const clean = (value: string | null | undefined): string =>
+      (value ?? '').replace(/\s+/g, ' ').trim();
+
+    const extractLabeledValue = (root: Element, label: string): string => {
+      const pattern = new RegExp(`${label}\\s*:?\\s*(.+?)(?=(Course Completed|Completion Date|View Certificate|$))`, 'i');
+
+      const direct = clean(root.textContent);
+      const directMatch = direct.match(pattern);
+      if (directMatch?.[1]) return clean(directMatch[1]);
+
+      const all = Array.from(root.querySelectorAll('*'));
+      for (const el of all) {
+        const text = clean(el.textContent);
+        const match = text.match(pattern);
+        if (match?.[1]) return clean(match[1]);
+
+        if (new RegExp(`^${label}\\s*:?$`, 'i').test(text)) {
+          const sibling = clean(el.nextElementSibling?.textContent);
+          if (sibling) return sibling;
+        }
+      }
+
+      return '';
+    };
+
     const links = Array.from(document.querySelectorAll('a[href]')) as HTMLAnchorElement[];
     links.forEach((link) => {
       if (
@@ -252,12 +306,25 @@ try {
         link.textContent?.toLowerCase().includes('certificate') ||
         link.textContent?.toLowerCase().includes('view certificate')
       ) {
-        const title = link.getAttribute('aria-label') ?? link.textContent?.trim() ?? '';
+        const container =
+          link.closest('.course-listing-item, .course-card, [data-course-id], article, li, section, div') ??
+          link.parentElement;
+        const linkText = clean(link.textContent);
+        const titleFromCourseCompleted = container
+          ? extractLabeledValue(container, 'Course Completed')
+          : '';
+        const title =
+          titleFromCourseCompleted ||
+          clean(link.getAttribute('aria-label')) ||
+          (linkText.toLowerCase() === 'view certificate' ? '' : linkText);
         if (!title) return;
         const imgEl = link.querySelector('img') as HTMLImageElement | null;
+        const issueDate = container
+          ? extractLabeledValue(container, 'Completion Date')
+          : '';
         results.push({
           title,
-          issueDate: '',
+          issueDate,
           courseUrl: link.href,
           badgeImageUrl: imgEl?.src ?? '',
         });
