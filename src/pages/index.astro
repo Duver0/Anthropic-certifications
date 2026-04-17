@@ -35,24 +35,30 @@ const lastUpdated = new Date().toLocaleDateString('en-US', {
       content="All Anthropic Skilljar certificates earned by Duver0."
     />
     <title>My Anthropic Certificates</title>
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
 
-  <body class="min-h-screen bg-gray-50 text-gray-800 font-sans">
+  <body class="page-shell font-sans text-ink-900">
     <!-- Header -->
-    <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
+    <header class="sticky top-0 z-10 border-b border-[#d9ccb8]/80 bg-[#fffaf1]/90 backdrop-blur-sm">
+      <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-3">
-          <!-- Anthropic-style logo mark -->
-          <span class="text-2xl" aria-hidden="true">🤖</span>
+          <span
+            class="grid h-10 w-10 place-items-center rounded-xl border border-[#d7c6ad] bg-[#f5ebdb] text-lg font-semibold text-[#9f4f31]"
+            aria-hidden="true"
+          >
+            A
+          </span>
           <div>
-            <h1 class="text-xl font-bold text-gray-900">My Anthropic Certificates</h1>
-            <p class="text-xs text-gray-500">Anthropic Skilljar Profile</p>
+            <h1 class="hero-title text-2xl leading-none text-ink-900 sm:text-3xl">Anthropic Learning Archive</h1>
+            <p class="text-xs tracking-[0.09em] text-ink-500 uppercase">Skilljar Certificates</p>
           </div>
         </div>
         <!-- Count badge -->
         <span
-          class="ml-auto inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-700"
+          class="ml-auto inline-flex items-center rounded-full border border-[#d3b79c] bg-[#f4e8d8] px-3 py-1 text-sm font-semibold text-[#8c452b]"
         >
           {total} {total === 1 ? 'certificate' : 'certificates'}
         </span>
@@ -60,19 +66,32 @@ const lastUpdated = new Date().toLocaleDateString('en-US', {
     </header>
 
     <!-- Main content -->
-    <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+    <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <section class="mesh-panel hero-fade-up mb-10 overflow-hidden rounded-3xl border border-[#dac9b2] p-6 shadow-[0_10px_30px_rgba(85,55,38,0.08)] sm:p-8">
+        <p class="mb-3 text-xs tracking-[0.11em] text-ink-500 uppercase">Verified Track</p>
+        <h2 class="hero-title max-w-3xl text-4xl leading-tight text-ink-900 sm:text-5xl">
+          Certificates completed through Anthropic's official learning platform.
+        </h2>
+        <p class="mt-4 max-w-2xl text-sm leading-relaxed text-ink-700 sm:text-base">
+          A curated record of applied coursework and certification progress, refreshed automatically from Skilljar.
+        </p>
+      </section>
+
       {total === 0 ? (
         <!-- Empty state -->
-        <div class="flex flex-col items-center justify-center py-24 text-center gap-4">
-          <span class="text-6xl" aria-hidden="true">🏅</span>
-          <h2 class="text-2xl font-semibold text-gray-700">No certificates yet</h2>
-          <p class="text-gray-400 max-w-sm">
+        <div class="mesh-panel flex flex-col items-center justify-center gap-4 rounded-3xl border border-[#dac9b2] py-24 text-center">
+          <span
+            class="grid h-16 w-16 place-items-center rounded-2xl border border-[#d3b79c] bg-[#f4e8d8] text-3xl text-[#9f4f31]"
+            aria-hidden="true"
+          >🏅</span>
+          <h2 class="hero-title text-3xl text-ink-900">No certificates yet</h2>
+          <p class="max-w-sm text-ink-500">
             Complete courses on{' '}
             <a
               href="https://anthropic.skilljar.com"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-orange-600 hover:underline"
+              class="font-semibold text-[#9f4f31] hover:text-[#7a3a24] hover:underline"
             >
               Anthropic Skilljar
             </a>{' '}
@@ -82,7 +101,7 @@ const lastUpdated = new Date().toLocaleDateString('en-US', {
       ) : (
         <!-- Certificate grid -->
         <div
-          class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          class="stagger grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
           aria-label="Certificate grid"
         >
           {certificates.map((cert) => (
@@ -93,14 +112,14 @@ const lastUpdated = new Date().toLocaleDateString('en-US', {
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-gray-200 bg-white mt-16 py-6">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+    <footer class="mt-16 border-t border-[#dbcbb6] bg-[#f5ecde] py-6">
+      <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-xs text-ink-500 sm:flex-row sm:px-6 lg:px-8">
         <span>Last updated: {lastUpdated}</span>
         <a
           href="https://anthropic.skilljar.com"
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:text-gray-600 hover:underline"
+          class="hover:text-[#7a3a24] hover:underline"
         >
           anthropic.skilljar.com
         </a>

@@ -1,7 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand-orange: #d97706;
-  --color-brand-dark: #1a1a2e;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-bg-cream: #f7f2e8;
+  --color-bg-paper: #fffaf1;
+  --color-bg-panel: #f1e8d9;
+  --color-ink-900: #1f1a17;
+  --color-ink-700: #4a433c;
+  --color-ink-500: #777067;
+  --color-accent-rust: #c6653f;
+  --color-accent-rust-deep: #9f4f31;
+  --color-accent-clay: #de8b68;
+  --font-sans: "Manrope", "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(80rem 50rem at 85% -10%, rgba(222, 139, 104, 0.2), transparent 55%),
+    radial-gradient(70rem 44rem at -10% 18%, rgba(198, 101, 63, 0.14), transparent 58%),
+    linear-gradient(180deg, #f7f2e8 0%, #fffaf1 100%);
+  color: var(--color-ink-900);
+}
+
+.page-shell {
+  min-height: 100vh;
+}
+
+.hero-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  letter-spacing: -0.015em;
+}
+
+.mesh-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 250, 241, 0.9) 0%, rgba(241, 232, 217, 0.8) 100%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(198, 101, 63, 0.06) 0,
+      rgba(198, 101, 63, 0.06) 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  backdrop-filter: blur(4px);
+}
+
+.hero-fade-up {
+  animation: fadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger > * {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 80ms; }
+.stagger > *:nth-child(2) { animation-delay: 150ms; }
+.stagger > *:nth-child(3) { animation-delay: 220ms; }
+.stagger > *:nth-child(4) { animation-delay: 290ms; }
+.stagger > *:nth-child(5) { animation-delay: 360ms; }
+.stagger > *:nth-child(6) { animation-delay: 430ms; }
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade-up,
+  .stagger > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
