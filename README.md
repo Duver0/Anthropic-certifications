@@ -3,7 +3,7 @@
 A static single-page application that displays all Anthropic Skilljar certificates.  
 Built with **Astro**, **Tailwind CSS v4**, and **Playwright** — powered by **Bun**.
 
-🌐 Live site: <https://Duver0.github.io/Antropic-certifications>
+🌐 Live site: <https://Duver0.github.io/Anthropic-certifications>
 
 ---
 
