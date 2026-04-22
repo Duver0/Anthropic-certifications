@@ -44,10 +44,10 @@ const logoSrc = `${baseUrl}favicon.svg`;
     <link rel="shortcut icon" href={logoSrc} type="image/svg+xml" />
   </head>
 
-  <body class="page-shell font-sans text-ink-900">
+  <body class="page-shell flex min-h-screen flex-col font-sans text-ink-900">
     <!-- Header -->
     <header class="sticky top-0 z-10 border-b border-[#d9ccb8]/80 bg-[#fffaf1]/90 backdrop-blur-sm">
-      <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <div class="mx-auto flex max-w-6xl items-center gap-4 px-2 py-2 sm:px-6 lg:px-8">
         <div class="flex items-center gap-3">
           <img
             src={logoSrc}
@@ -69,17 +69,7 @@ const logoSrc = `${baseUrl}favicon.svg`;
     </header>
 
     <!-- Main content -->
-    <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <section class="mesh-panel hero-fade-up mb-10 overflow-hidden rounded-3xl border border-[#dac9b2] p-6 shadow-[0_10px_30px_rgba(85,55,38,0.08)] sm:p-8">
-        <p class="mb-3 text-xs tracking-[0.11em] text-ink-500 uppercase">Verified Track</p>
-        <h2 class="hero-title max-w-3xl text-4xl leading-tight text-ink-900 sm:text-5xl">
-          Certificates completed through Anthropic's official learning platform.
-        </h2>
-        <p class="mt-4 max-w-2xl text-sm leading-relaxed text-ink-700 sm:text-base">
-          A curated record of applied coursework and certification progress, refreshed automatically from Skilljar.
-        </p>
-      </section>
-
+    <main class="mx-auto max-w-6xl flex-1 px-4 py-2 sm:px-6 lg:px-8">
       {total === 0 ? (
         <!-- Empty state -->
         <div class="mesh-panel flex flex-col items-center justify-center gap-4 rounded-3xl border border-[#dac9b2] py-24 text-center">
@@ -102,9 +92,9 @@ const logoSrc = `${baseUrl}favicon.svg`;
           </p>
         </div>
       ) : (
-        <!-- Certificate grid -->
+        <!-- Certificate grid with internal scroll -->
         <div
-          class="stagger grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          class="grid max-h-[calc(100vh-120px)] grid-cols-1 gap-6 overflow-y-auto py-4 sm:grid-cols-2 lg:grid-cols-4"
           aria-label="Certificate grid"
         >
           {certificates.map((cert) => (
@@ -115,7 +105,7 @@ const logoSrc = `${baseUrl}favicon.svg`;
     </main>
 
     <!-- Footer -->
-    <footer class="mt-16 border-t border-[#dbcbb6] bg-[#f5ecde] py-6">
+    <footer class=" border-t border-[#dbcbb6] bg-[#f5ecde] py-3">
       <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-xs text-ink-500 sm:flex-row sm:px-6 lg:px-8">
         <span>Last updated: {lastUpdated}</span>
         <a
